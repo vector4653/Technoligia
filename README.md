@@ -27,7 +27,9 @@ docker compose up --build
 docker-compose up --build
 ```
 
-- The service in `docker-compose.yml` maps port `3000`. Open http://localhost:3000 after the containers start.
+- The `client` service maps port `3000` (frontend).
+- The `server` service maps port `5000` (backend API).
+- Open http://localhost:3000 to access the application.
 - To stop and remove containers:
 
 ```bash
@@ -75,11 +77,11 @@ npm run dev
 
 ## System architecture overview
 
-- Frontend: React with Vite (located in `client/`) providing dashboard and auth UI.
+- Frontend: React with Vite (located in `client/`) providing dashboard and auth UI. Served via Nginx in Docker.
 - Backend: Express.js server (located in `server/`) exposing REST APIs under `/api/*`.
 - Database: SQLite via Sequelize (file `server/database.sqlite` by default) for simplicity and portability.
 - Auth: JWT-based authentication (`process.env.JWT_SECRET` required).
-- Dev/Deployment: `docker-compose.yml` provides a containerized run option; in production the server can serve the built frontend from `server/public`.
+- Dev/Deployment: `docker-compose.yml` orchestrates `client` and `server` services.
 
 ## Setup and testing instructions (details)
 
@@ -116,7 +118,7 @@ node seed.js
 - Security: HTTPS, rate limiting, secure cookie handling, and production-ready token rotation are not implemented here.
 - Secrets: `JWT_SECRET` must be provided via `.env` or container environment; do not commit secrets.
 - Seed script: `server/seed.js` uses `sequelize.sync({ force: true })` and will DROP tables — use only for development.
-- Docker setup: `docker-compose.yml` uses a single `web` service and serves port `3000`. Frontend is not built automatically unless you add build steps; the current compose file assumes the server will serve static assets from `server/public` in production.
+- Docker setup: `docker-compose.yml` runs two services: `client` (Nginx serving React build) and `server` (Express API).
 
 ## Useful commands summary
 

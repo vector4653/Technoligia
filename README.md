@@ -1,5 +1,12 @@
 # build2break
 
+## Domain: Logi-tech
+
+## Problem statement
+This repository implements a simple freight marketplace: a platform where shippers create loads and fleet managers/drivers place bids to carry freight. The selected is logistics/freight matching (loads, bids, fleets, drivers, shippers).
+
+Core problem: Provide a minimal full-stack reference that allows shippers to publish loads, fleet managers to bid, and drivers to view assigned loads with OTP-based secure pickup/delivery confirmation to ensure the safety of the goods.
+
 ## How to run the project
 
 This project can be run with Docker (recommended) or locally using VS Code + `git clone`.
@@ -62,11 +69,6 @@ npm run dev
 	- Health check: `GET /api/health` (e.g. http://localhost:3000/api/health)
 	- API roots: `/api/auth`, `/api/loads`
 
-## Problem statement and selected domain
-
-This repository implements a simple freight marketplace prototype (build2break): a platform where shippers create loads and fleets/drivers place bids to carry freight. The selected domain is logistics/freight matching (loads, bids, fleets, drivers, shippers).
-
-Core problem: Provide a minimal full-stack reference that allows shippers to publish loads, fleets to bid, and drivers to view assigned loads with OTP-based pickup/delivery confirmation.
 
 ## System architecture overview
 

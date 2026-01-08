@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+import Home from './pages/Home';
 import ShipperDashboard from './pages/ShipperDashboard';
 import FleetDashboard from './pages/FleetDashboard';
 import DriverDashboard from './pages/DriverDashboard';
@@ -26,7 +27,7 @@ function App() {
             <Route path="/driver" element={<DriverDashboard />} />
           </Route>
 
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Home />} />
         </Routes>
         <VoiceCommandFab />
       </AuthProvider>

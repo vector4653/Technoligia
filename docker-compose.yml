@@ -8,3 +8,4 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=production
+      - JWT_SECRET=dev_secret_key_123

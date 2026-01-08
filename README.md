@@ -18,6 +18,8 @@ This project can be run with Docker (recommended) or locally using VS Code + `gi
 - From the project root run:
 
 ```bash
+git clone <https://github.com/vector4653/Technoligia.git> build2break
+cd build2break
 # With Docker Compose v2 (recommended)
 docker compose up --build
 
@@ -42,7 +44,7 @@ docker compose down
 - Clone the repository and open it in VS Code:
 
 ```bash
-git clone <REPO_URL> build2break
+git clone <https://github.com/vector4653/Technoligia.git> build2break
 cd build2break
 ```
 

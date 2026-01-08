@@ -1,4 +1,5 @@
 const { sequelize, User, Load, Bid } = require('./src/models');
+const { generateOTP } = require('./src/utils/otpGenerator');
 const bcrypt = require('bcryptjs');
 
 async function seed() {
@@ -21,7 +22,7 @@ async function seed() {
         // Create Driver associated with Fleet
         const driver = await User.create({
             email: 'driver@test.com',
-            password: passwordHash,
+            password: '1234',
             role: 'DRIVER',
             wallet_balance: 50.00,
             fleetId: fleet.id
@@ -66,8 +67,8 @@ async function seed() {
                 assignedToFleetId: fleet.id,
                 assignedToDriverId: driver.id,
                 winningBidAmount: 1100,
-                pickupOtp: '123456',
-                deliveryOtp: '654321',
+                pickupOtp: generateOTP(),
+                deliveryOtp: generateOTP(),
             },
         ]);
         console.log('Loads created');

@@ -180,7 +180,8 @@ exports.verifyOtp = async (req, res) => {
                 return res.status(400).json({ message: 'Invalid Pickup OTP' });
             }
             nextStatus = 'IN_TRANSIT';
-            await load.update({ status: nextStatus }, { transaction: t });
+            // FIX: Clear OTP so it can't be reused
+            await load.update({ status: nextStatus, pickupOtp: null }, { transaction: t });
 
         } else if (load.status === 'IN_TRANSIT') {
             if (String(load.deliveryOtp).trim() !== String(otp).trim()) {
@@ -212,7 +213,8 @@ exports.verifyOtp = async (req, res) => {
             // The prompt says "wallet money should decrease when the delivery has been done".
             // So we'll do the transfer now.
 
-            await load.update({ status: 'DELIVERED' }, { transaction: t });
+            // FIX: Clear OTP so it can't be reused
+            await load.update({ status: 'DELIVERED', deliveryOtp: null }, { transaction: t });
         } else {
             await t.rollback();
             return res.status(400).json({ message: 'Load not in a state for OTP verification' });

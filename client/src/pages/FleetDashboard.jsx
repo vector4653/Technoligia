@@ -66,6 +66,10 @@ const FleetDashboard = () => {
                                 <div className="flex space-x-2 mt-2">
                                     <input
                                         type="number"
+                                        min="1"
+                                        onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                        }}
                                         placeholder="Bid Amount"
                                         className="w-full p-2 border dark:border-slate-700 rounded dark:bg-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
                                         value={bidAmounts[load.id] || ''}

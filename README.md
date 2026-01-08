@@ -9,7 +9,7 @@
 
 1.  Open the link provided in `deployment.txt`.
 2.  Use the credentials below to log in.
-
+3.  Vimeo demo link: `https://vimeo.com/1152656448?share=copy&fl=sv&fe=ci`.
 ---
 
 ## 🧪 Demo Credentials

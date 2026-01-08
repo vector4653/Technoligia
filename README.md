@@ -2,13 +2,13 @@
 
 **FreightSync** is a secure, containerized freight marketplace application. It connects shippers with fleet managers, enabling load creation, bidding, and shipment tracking with OTP verification.
 
-## 🚀 Live Demo Deployment
+## 🚀 Quick Start
 
-**Public URL**: Passed in `deployment.txt` (via Ngrok tunnel).
-> Please refer to `deployment.txt` in the submission folder for the active public link.
+The easiest way to run the project.
 
-1.  Open the link provided in `deployment.txt`.
-2.  Use the credentials below to log in.
+### Prerequisites
+- Docker Desktop (Windows/Mac/Linux)
+- [Ngrok Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) (Optional, for public access)
 
 ---
 

@@ -23,6 +23,14 @@ const User = sequelize.define('User', {
         type: DataTypes.ENUM('SHIPPER', 'FLEET', 'DRIVER'),
         allowNull: false,
     },
+    wallet_balance: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0.00,
+    },
+    fleetId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
 });
 
 module.exports = User;

@@ -1,0 +1,50 @@
+const { User, Load, Bid } = require('../models');
+const { Op } = require('sequelize');
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.user.id, {
+            attributes: ['id', 'email', 'role', 'wallet_balance'] // Return real balance
+        });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getMyActiveLoad = async (req, res) => {
+    try {
+        const { id, role } = req.user;
+        let status_text = "";
+
+        if (role === 'DRIVER') {
+            // Find the load currently assigned to this driver
+            const load = await Load.findOne({
+                where: {
+                    assignedToDriverId: id,
+                    status: { [Op.in]: ['ASSIGNED', 'IN_TRANSIT'] }
+                }
+            });
+
+            if (load) {
+                status_text = `You have an active load going to ${load.destination}. The status is ${load.status}.`;
+            } else {
+                status_text = "You have no active loads right now. Enjoy your break.";
+            }
+
+        } else if (role === 'SHIPPER') {
+            // Count open loads
+            const count = await Load.count({ where: { shipperId: id, status: 'OPEN' } });
+            status_text = `You have ${count} loads currently open for bidding.`;
+
+        } else if (role === 'FLEET') {
+            // Count active bids
+            const activeBids = await Bid.count({ where: { fleetId: id, status: 'PENDING' } });
+            status_text = `You have ${activeBids} pending bids in the marketplace.`;
+        }
+
+        res.json({ status_text });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

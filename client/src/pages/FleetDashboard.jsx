@@ -9,7 +9,7 @@ const FleetDashboard = () => {
 
     const fetchLoads = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/loads');
+            const res = await axios.get('/api/loads');
             setLoads(res.data);
         } catch (err) {
             console.error(err);
@@ -27,7 +27,7 @@ const FleetDashboard = () => {
         try {
             const amount = bidAmounts[loadId];
             if (!amount) return;
-            await axios.post(`http://localhost:5000/api/loads/${loadId}/bids`, { amount: Number(amount) });
+            await axios.post(`/api/loads/${loadId}/bids`, { amount: Number(amount) });
             fetchLoads();
             setBidAmounts(prev => ({ ...prev, [loadId]: '' }));
         } catch (err) {

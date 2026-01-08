@@ -14,7 +14,7 @@ const ShipperDashboard = () => {
 
     const fetchLoads = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/loads');
+            const res = await axios.get('/api/loads');
             setLoads(res.data);
         } catch (err) {
             console.error(err);
@@ -28,7 +28,7 @@ const ShipperDashboard = () => {
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/loads', formData);
+            await axios.post('/api/loads', formData);
             setShowForm(false);
             setFormData({ origin: '', destination: '', cargoType: '', maxPrice: '' });
             fetchLoads();
@@ -39,7 +39,7 @@ const ShipperDashboard = () => {
 
     const handleAcceptBid = async (loadId, bidId) => {
         try {
-            await axios.post('http://localhost:5000/api/loads/accept-bid', { loadId, bidId });
+            await axios.post('/api/loads/accept-bid', { loadId, bidId });
             fetchLoads();
         } catch (err) {
             alert(err.response?.data?.message || 'Error accepting bid');

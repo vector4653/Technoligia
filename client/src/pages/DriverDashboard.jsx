@@ -10,7 +10,7 @@ const DriverDashboard = () => {
 
     const fetchLoads = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/loads');
+            const res = await axios.get('/api/loads');
             setLoads(res.data);
         } catch (err) {
             console.error(err);
@@ -23,7 +23,7 @@ const DriverDashboard = () => {
 
     const handleVerify = async (loadId) => {
         try {
-            await axios.post(`http://localhost:5000/api/loads/${loadId}/verify-otp`, {
+            await axios.post(`/api/loads/${loadId}/verify-otp`, {
                 otp: otpInputs[loadId]
             });
             fetchLoads();

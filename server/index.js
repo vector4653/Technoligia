@@ -17,8 +17,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api/loads', require('./src/routes/loadRoutes'));
 
 // Test Route
-app.get('/', (req, res) => {
+app.get('/api/health', (req, res) => {
     res.send('FreightSync API is running');
+});
+
+// Serve Static Assets in Production
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
 // Database & Server Start

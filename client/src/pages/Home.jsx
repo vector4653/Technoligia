@@ -13,7 +13,7 @@ const Home = () => {
                     <div className="flex items-center gap-2">
                         <Truck className="h-8 w-8 text-blue-600 dark:text-blue-500" />
                         <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
-                            Technoligia
+                            FreightSync
                         </span>
                     </div>
                     <button

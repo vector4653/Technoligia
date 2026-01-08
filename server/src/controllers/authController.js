@@ -2,6 +2,10 @@ const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Pre-calculate a dummy hash for constant-time comparison
+// This ensures that even if a user doesn't exist, we perform a bcrypt comparison
+const DUMMY_HASH = bcrypt.hashSync('dummyUserPassword123!', 10);
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -10,10 +14,18 @@ exports.login = async (req, res) => {
         if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
 
         const user = await User.findOne({ where: { email } });
-        if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-        const validPass = await bcrypt.compare(password, user.password);
-        if (!validPass) return res.status(400).json({ message: 'Invalid credentials' });
+        // Use the user's password if they exist, otherwise use the dummy hash
+        const comparePassword = user ? user.password : DUMMY_HASH;
+
+        // Always run the comparison
+        const isMatch = await bcrypt.compare(password, comparePassword);
+
+        // If user doesn't exist OR password doesn't match, return error
+        // This keeps the timing roughly consistent (~same bcrypt cost) 
+        if (!user || !isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
 
         // Create Token
         const token = jwt.sign(

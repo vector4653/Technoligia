@@ -131,8 +131,3 @@ cd client
 npm install
 npm run dev   # vite dev server
 ```
-
-## Where to look next
-
-- Backend routes: `server/src/routes/*` and controllers in `server/src/controllers/`.
-- Data models: `server/src/models/` (User, Load, Bid).

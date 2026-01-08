@@ -2,13 +2,13 @@
 
 **FreightSync** is a secure, containerized freight marketplace application. It connects shippers with fleet managers, enabling load creation, bidding, and shipment tracking with OTP verification.
 
-## 🚀 Quick Start
+## 🚀 Live Demo Deployment
 
-The easiest way to run the project.
+**Public URL**: Passed in `deployment.txt` (via Ngrok tunnel).
+> Please refer to `deployment.txt` in the submission folder for the active public link.
 
-### Prerequisites
-- Docker Desktop (Windows/Mac/Linux)
-- [Ngrok Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) (Optional, for public access)
+1.  Open the link provided in `deployment.txt`.
+2.  Use the credentials below to log in.
 
 ---
 
@@ -59,19 +59,15 @@ The architecture follows industry best practices for modern web applications:
 
 ```mermaid
 graph LR
-    subgraph Internet
+    subgraph Browser ["User Browser"]
         User(("User"))
-    end
-
-    subgraph Tunnel ["Public Tunnel"]
-        Ngrok["Ngrok Service"]
+        SPA["React SPA"]
     end
 
     subgraph Docker ["Docker Host"]
         direction TB
         subgraph ClientService ["Client Service :3000"]
-            Nginx["Nginx Reverse Proxy"]
-            SPA["React SPA"]
+            Nginx["Nginx Web Server"]
         end
         
         subgraph ServerService ["Server Service :5000"]
@@ -81,35 +77,39 @@ graph LR
         Volume[("database.sqlite")]
     end
 
-    User -->|HTTPS| Ngrok
-    Ngrok -->|Tunnel| Nginx
-    Nginx -->|"1. Serves Static"| SPA
-    SPA -->|"2. /api calls"| Nginx
-    Nginx -->|"3. Proxies /api"| Express
+    User -->|Access http://localhost:3000| Nginx
+    Nginx -->|"Serves Static Assets"| SPA
+    SPA -->|"REST API Request"| Express
     Express -->|"ORM / SQL"| Volume
     
     style User fill:#f9f,stroke:#333,stroke-width:2px
-    style Ngrok fill:#1F1E24,stroke:#fff,stroke-width:2px,color:#fff
     style SPA fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
     style Nginx fill:#009639,stroke:#333,stroke-width:2px,color:#fff
     style Express fill:#8cc84b,stroke:#333,stroke-width:2px,color:#fff
     style Volume fill:#f29111,stroke:#333,stroke-width:2px,color:#fff
 ```
 
-## 🛠️ How to Run (Locally)
+## 🚀 Quick Start
 
 ### Prerequisites
-- Docker Desktop
+- Node.js (v16 or higher)
+- npm
 
-### Steps
-1.  Navigate to the infrastructure folder:
-    ```bash
-    cd infra
-    ```
-2.  Start the containers:
-    ```bash
-    docker-compose up --build
-    ```
-3.  Access the application:
-    -   **Frontend**: http://localhost:3000
-    -   **API**: http://localhost:5000
+### 1. Start the Server
+```bash
+cd server
+npm install
+npm run dev
+```
+The server will run on [http://localhost:5000](http://localhost:5000).
+
+### 2. Start the Client
+Open a new terminal:
+```bash
+cd client
+npm install
+npm run dev
+```
+The application will run on [http://localhost:5173](http://localhost:5173) (or similar).
+
+---

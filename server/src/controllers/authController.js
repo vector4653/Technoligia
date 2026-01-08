@@ -76,7 +76,7 @@ exports.register = async (req, res) => {
             password,
             role,
             fleetId: role === 'DRIVER' ? fleetId : null,
-            wallet_balance: role === 'SHIPPER' ? 50000 : role === 'FLEET' ? 12500 : 0
+            wallet_balance: 0
         });
 
         // Create Token

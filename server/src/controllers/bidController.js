@@ -1,4 +1,4 @@
-const { Load, Bid } = require('../models');
+const { Load, Bid, User } = require('../models');
 
 exports.placeBid = async (req, res) => {
     try {
@@ -22,6 +22,11 @@ exports.placeBid = async (req, res) => {
 
         if (amount > load.maxPrice) {
             return res.status(400).json({ message: `Bid cannot exceed max price of $${load.maxPrice}` });
+        }
+
+        const fleet = await User.findByPk(req.user.id);
+        if (Number(fleet.wallet_balance) < amount) {
+            return res.status(400).json({ message: 'Insufficient wallet funds to place this bid' });
         }
 
         const bid = await Bid.create({

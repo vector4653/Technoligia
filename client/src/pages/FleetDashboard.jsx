@@ -6,9 +6,25 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const FleetDashboard = () => {
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const [loads, setLoads] = useState([]);
     const [bidAmounts, setBidAmounts] = useState({});
+    const [showAddMoney, setShowAddMoney] = useState(false);
+    const [addAmount, setAddAmount] = useState('');
+
+    const handleAddFunds = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post('/api/users/wallet/add', { amount: Number(addAmount) });
+            // Update user context with new balance
+            setUser({ ...user, wallet_balance: res.data.new_balance });
+            setShowAddMoney(false);
+            setAddAmount('');
+            alert('Funds added successfully!');
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error adding funds');
+        }
+    };
 
     const fetchLoads = async () => {
         try {
@@ -46,10 +62,54 @@ const FleetDashboard = () => {
                 <div className="flex justify-between items-end mb-6">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Load Marketplace</h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">
-                            Wallet: <span className="font-bold text-green-600 dark:text-green-400">${Number(user?.wallet_balance || 0).toFixed(2)}</span>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1 flex items-center">
+                            Wallet: <span className="font-bold text-green-600 dark:text-green-400 ml-1">${Number(user?.wallet_balance || 0).toFixed(2)}</span>
+                            <button
+                                onClick={() => setShowAddMoney(true)}
+                                className="ml-3 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-md text-sm font-bold transition"
+                            >
+                                + Add Funds
+                            </button>
                         </p>
                     </div>
+
+                    {showAddMoney && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-2xl w-full max-w-sm border border-gray-100 dark:border-slate-800">
+                                <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Add Funds to Wallet</h2>
+                                <form onSubmit={handleAddFunds}>
+                                    <div className="mb-4">
+                                        <label className="block text-gray-500 dark:text-gray-400 mb-2">Amount ($)</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            step="0.01"
+                                            required
+                                            value={addAmount}
+                                            onChange={(e) => setAddAmount(e.target.value)}
+                                            className="w-full p-3 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-green-500"
+                                            placeholder="Enter amount"
+                                        />
+                                    </div>
+                                    <div className="flex justify-end space-x-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAddMoney(false)}
+                                            className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold"
+                                        >
+                                            Add Funds
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

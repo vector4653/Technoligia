@@ -48,3 +48,30 @@ exports.getMyActiveLoad = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.addFunds = async (req, res) => {
+    try {
+        console.log(`[AddFunds] Request from user ${req.user.id} with amount ${req.body.amount}`);
+        const { amount } = req.body;
+        if (!amount || isNaN(amount) || amount <= 0) {
+            console.log(`[AddFunds] Invalid amount: ${amount}`);
+            return res.status(400).json({ message: "Invalid amount" });
+        }
+
+        const user = await User.findByPk(req.user.id);
+        if (!user) {
+            console.log(`[AddFunds] User not found: ${req.user.id}`);
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.wallet_balance = parseFloat(user.wallet_balance) + parseFloat(amount);
+        await user.save();
+
+        res.json({
+            message: "Funds added successfully",
+            new_balance: user.wallet_balance
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

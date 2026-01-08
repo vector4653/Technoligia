@@ -11,22 +11,31 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const decoded = jwtDecode(token);
-                // Check expiry?
-                if (decoded.exp * 1000 < Date.now()) {
+        const initAuth = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token);
+                    if (decoded.exp * 1000 < Date.now()) {
+                        logout();
+                    } else {
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                        setUser(decoded); // Set initial state from token
+                        try {
+                            // Fetch fresh data (wallet balance etc)
+                            const res = await axios.get('/api/users/me');
+                            setUser(res.data);
+                        } catch (err) {
+                            console.error('Failed to fetch fresh user data', err);
+                        }
+                    }
+                } catch (e) {
                     logout();
-                } else {
-                    setUser(decoded);
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 }
-            } catch (e) {
-                logout();
             }
-        }
-        setLoading(false);
+            setLoading(false);
+        };
+        initAuth();
     }, []);
 
     const login = async (email, password) => {
@@ -50,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

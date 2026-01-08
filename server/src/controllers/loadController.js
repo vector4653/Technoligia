@@ -9,6 +9,12 @@ exports.createLoad = async (req, res) => {
         // FIX: Destructure only the allowed fields to prevent Mass Assignment attacks
         const { origin, destination, cargoType, weight, maxPrice, pickupDate, deliveryDate } = req.body;
 
+        // Validation: Check if shipper has enough funds
+        const shipper = await User.findByPk(req.user.id);
+        if (Number(shipper.wallet_balance) < Number(maxPrice)) {
+            return res.status(400).json({ message: 'Insufficient wallet funds to post this load.' });
+        }
+
         const load = await Load.create({
             origin,
             destination,

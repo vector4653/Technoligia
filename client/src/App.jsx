@@ -6,7 +6,7 @@ import FleetDashboard from './pages/FleetDashboard';
 import DriverDashboard from './pages/DriverDashboard';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import VoiceCommandFab from './components/VoiceCommandFab';
+
 
 function App() {
   return (
@@ -29,7 +29,6 @@ function App() {
 
           <Route path="/" element={<Home />} />
         </Routes>
-        <VoiceCommandFab />
       </AuthProvider>
     </BrowserRouter>
   );

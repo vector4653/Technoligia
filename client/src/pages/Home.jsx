@@ -73,12 +73,12 @@ const Home = () => {
                                 </p>
                             </div>
 
-                            {/* Fleet Owner Card */}
+                            {/* Fleet Manager Card */}
                             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow">
                                 <div className="h-12 w-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-6">
                                     <BarChart3 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">For Fleet Owners</h3>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">For Fleet Managers</h3>
                                 <p className="text-slate-600 dark:text-slate-400">
                                     Monitor your entire fleet at a glance. Manage drivers, schedule maintenance, and analyze performance metrics to optimize operations.
                                 </p>
@@ -91,7 +91,7 @@ const Home = () => {
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">For Drivers</h3>
                                 <p className="text-slate-600 dark:text-slate-400">
-                                    Receive voice-enabled job alerts, access route details, and update status on the go. Designed for safety and ease of use.
+                                    Receive real-time job alerts, access route details, and update status on the go. Designed for safety and ease of use.
                                 </p>
                             </div>
                         </div>

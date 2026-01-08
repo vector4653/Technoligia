@@ -17,31 +17,31 @@ const Login = () => {
             else if (user.role === 'FLEET') navigate('/fleet');
             else if (user.role === 'DRIVER') navigate('/driver');
         } catch (err) {
-            setError('Invalid credentials');
+            setError(err.toString());
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">FreightSync Login</h2>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-950 transition-colors duration-200">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded shadow-md w-full max-w-md transition-colors duration-200">
+                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">FreightSync Login</h2>
                 {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Email</label>
                         <input
                             type="email"
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                            className="mt-1 block w-full p-2 border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none transition-colors duration-200"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Password</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Password</label>
                         <input
                             type="password"
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded focus:border-blue-500 focus:outline-none"
+                            className="mt-1 block w-full p-2 border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none transition-colors duration-200"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -54,7 +54,7 @@ const Login = () => {
                         Sign In
                     </button>
                 </form>
-                <div className="mt-4 text-xs text-gray-500 space-y-1">
+                <div className="mt-4 text-xs text-gray-500 dark:text-slate-500 space-y-1">
                     <p>Demo Credentials:</p>
                     <p>Shipper: shipper@test.com / 1234</p>
                     <p>Fleet: fleet@test.com / 1234</p>

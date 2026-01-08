@@ -74,67 +74,120 @@ const ShipperDashboard = () => {
                     </div>
                 )}
 
-                <div className="grid gap-6">
-                    {loads.map(load => (
-                        <div key={load.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <div className="flex items-center space-x-3 mb-2">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase 
-                      ${load.status === 'OPEN' ? 'bg-green-100 text-green-700' :
-                                                load.status === 'BIDDING' ? 'bg-yellow-100 text-yellow-700' :
-                                                    'bg-blue-100 text-blue-700'}`}>
-                                            {load.status}
-                                        </span>
-                                        <span className="text-gray-400 text-sm">#{load.id}</span>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-800">{load.origin} → {load.destination}</h3>
-                                    <p className="text-gray-500 mt-1">{load.cargoType} • Max: ${load.maxPrice}</p>
-                                </div>
-                                {load.status === 'ASSIGNED' && (
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-gray-500">Pickup OTP</p>
-                                        <p className="text-2xl font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">{load.pickupOtp}</p>
-                                    </div>
-                                )}
-                                {load.status === 'IN_TRANSIT' && (
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-gray-500">Delivery OTP</p>
-                                        <p className="text-2xl font-mono text-green-600 bg-green-50 px-2 py-1 rounded">{load.deliveryOtp}</p>
-                                    </div>
-                                )}
-                            </div>
+                <div className="space-y-12">
 
-                            {/* Bids Section */}
-                            {(load.status === 'OPEN' || load.status === 'BIDDING') && load.bids && load.bids.length > 0 && (
-                                <div className="mt-6 pt-6 border-t border-gray-100">
-                                    <h4 className="text-sm font-bold text-gray-400 uppercase mb-3">Incoming Bids ({load.bids.length})</h4>
-                                    <div className="space-y-3">
-                                        {load.bids.map(bid => (
-                                            <div key={bid.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                                                <div>
-                                                    <p className="font-bold text-gray-800">${bid.amount}</p>
-                                                    <p className="text-xs text-gray-500">{bid.bidder?.email}</p>
-                                                </div>
-                                                {bid.status === 'PENDING' && (
-                                                    <button
-                                                        onClick={() => handleAcceptBid(load.id, bid.id)}
-                                                        className="bg-slate-800 text-white px-4 py-2 rounded text-sm hover:bg-slate-700 transition"
-                                                    >
-                                                        Accept
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                    {/* Active Deliveries Section */}
+                    <section>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                            Active Deliveries
+                        </h2>
+                        <div className="grid gap-6">
+                            {loads.filter(l => l.status === 'IN_TRANSIT').length === 0 ? (
+                                <p className="text-gray-400 italic">No deliveries in progress.</p>
+                            ) : (
+                                loads.filter(l => l.status === 'IN_TRANSIT').map(load => (
+                                    <LoadCard key={load.id} load={load} handleAcceptBid={handleAcceptBid} />
+                                ))
                             )}
                         </div>
-                    ))}
+                    </section>
+
+                    {/* Pending Deliveries Section */}
+                    <section>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                            Pending Pickup & Closures
+                        </h2>
+                        <div className="grid gap-6">
+                            {loads.filter(l => ['ASSIGNED', 'DELIVERED', 'PAID'].includes(l.status)).length === 0 ? (
+                                <p className="text-gray-400 italic">No pending tasks.</p>
+                            ) : (
+                                loads.filter(l => ['ASSIGNED', 'DELIVERED', 'PAID'].includes(l.status)).map(load => (
+                                    <LoadCard key={load.id} load={load} handleAcceptBid={handleAcceptBid} />
+                                ))
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Bidding Section */}
+                    <section>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                            In Bidding
+                        </h2>
+                        <div className="grid gap-6">
+                            {loads.filter(l => ['OPEN', 'BIDDING'].includes(l.status)).length === 0 ? (
+                                <p className="text-gray-400 italic">No open loads for bidding.</p>
+                            ) : (
+                                loads.filter(l => ['OPEN', 'BIDDING'].includes(l.status)).map(load => (
+                                    <LoadCard key={load.id} load={load} handleAcceptBid={handleAcceptBid} />
+                                ))
+                            )}
+                        </div>
+                    </section>
+
                 </div>
             </div>
         </div>
     );
 };
+
+const LoadCard = ({ load, handleAcceptBid }) => (
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
+        <div className="flex justify-between items-start">
+            <div>
+                <div className="flex items-center space-x-3 mb-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase 
+                    ${load.status === 'OPEN' ? 'bg-green-100 text-green-700' :
+                            load.status === 'BIDDING' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-blue-100 text-blue-700'}`}>
+                        {load.status}
+                    </span>
+                    <span className="text-gray-400 text-sm">#{load.id}</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">{load.origin} → {load.destination}</h3>
+                <p className="text-gray-500 mt-1">{load.cargoType} • Max: ${load.maxPrice}</p>
+            </div>
+            {load.status === 'ASSIGNED' && (
+                <div className="text-right">
+                    <p className="text-sm font-bold text-gray-500">Pickup OTP</p>
+                    <p className="text-2xl font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">{load.pickupOtp}</p>
+                </div>
+            )}
+            {load.status === 'IN_TRANSIT' && (
+                <div className="text-right">
+                    <p className="text-sm font-bold text-gray-500">Delivery OTP</p>
+                    <p className="text-2xl font-mono text-green-600 bg-green-50 px-2 py-1 rounded">{load.deliveryOtp}</p>
+                </div>
+            )}
+        </div>
+
+        {/* Bids Section */}
+        {(load.status === 'OPEN' || load.status === 'BIDDING') && load.bids && load.bids.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-gray-100">
+                <h4 className="text-sm font-bold text-gray-400 uppercase mb-3">Incoming Bids ({load.bids.length})</h4>
+                <div className="space-y-3">
+                    {load.bids.map(bid => (
+                        <div key={bid.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                            <div>
+                                <p className="font-bold text-gray-800">${bid.amount}</p>
+                                <p className="text-xs text-gray-500">{bid.bidder?.email}</p>
+                            </div>
+                            {bid.status === 'PENDING' && (
+                                <button
+                                    onClick={() => handleAcceptBid(load.id, bid.id)}
+                                    className="bg-slate-800 text-white px-4 py-2 rounded text-sm hover:bg-slate-700 transition"
+                                >
+                                    Accept
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+    </div>
+);
 
 export default ShipperDashboard;

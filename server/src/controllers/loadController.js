@@ -34,7 +34,24 @@ exports.getLoads = async (req, res) => {
                 ]
             };
         } else if (role === 'DRIVER') {
-            where = { assignedToDriverId: id };
+            const { Op } = require('sequelize');
+            // My Active Tasks OR Available Jobs in my Fleet's Pool
+            // Assumption: user object in req has fleetId. (Need to ensure that in verifyToken or lookup here)
+            // But wait, req.user from JWT might not have fleetId if token is old.
+            // Let's fetch the user to be safe or rely on updated token.
+            // For now, let's look up the user's fleetId.
+            const driver = await User.findByPk(id);
+
+            where = {
+                [Op.or]: [
+                    { assignedToDriverId: id }, // Assigned to me
+                    {
+                        assignedToFleetId: driver.fleetId,
+                        assignedToDriverId: null, // Unassigned in my fleet
+                        status: 'ASSIGNED' // Ready for driver assignment
+                    }
+                ]
+            };
         }
 
         const loads = await Load.findAll({
@@ -65,15 +82,16 @@ exports.acceptBid = async (req, res) => {
         const bid = await Bid.findByPk(bidId);
         if (!bid) return res.status(404).json({ message: 'Bid not found' });
 
-        // Auto-assign to the first available driver (Hackathon Shortcut)
-        // In a real app, the Fleet Manager would assign this via another API call.
-        const driver = await User.findOne({ where: { role: 'DRIVER' } });
+        // REMOVED: Auto-assign to the first available driver (Hackathon Shortcut)
+        // Now using Driver Job Pool
+        // const driver = await User.findOne({ where: { role: 'DRIVER' } });
 
         // Update Load
         await load.update({
             status: 'ASSIGNED',
             assignedToFleetId: bid.fleetId,
-            assignedToDriverId: driver ? driver.id : null, // Auto-assign if driver exists
+            assignedToFleetId: bid.fleetId,
+            assignedToDriverId: null, // Driver accepts it later
             winningBidAmount: bid.amount,
             pickupOtp: generateOTP(),
             deliveryOtp: generateOTP(),
@@ -114,10 +132,10 @@ exports.verifyOtp = async (req, res) => {
         let nextStatus = '';
 
         if (load.status === 'ASSIGNED') {
-            if (load.pickupOtp !== otp) return res.status(400).json({ message: 'Invalid Pickup OTP' });
+            if (String(load.pickupOtp).trim() !== String(otp).trim()) return res.status(400).json({ message: 'Invalid Pickup OTP' });
             nextStatus = 'IN_TRANSIT';
         } else if (load.status === 'IN_TRANSIT') {
-            if (load.deliveryOtp !== otp) return res.status(400).json({ message: 'Invalid Delivery OTP' });
+            if (String(load.deliveryOtp).trim() !== String(otp).trim()) return res.status(400).json({ message: 'Invalid Delivery OTP' });
             nextStatus = 'DELIVERED';
         } else {
             return res.status(400).json({ message: 'Load not in a state for OTP verification' });
@@ -125,6 +143,34 @@ exports.verifyOtp = async (req, res) => {
 
         await load.update({ status: nextStatus });
         res.json({ message: `Load status updated to ${nextStatus}`, load });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.acceptJob = async (req, res) => {
+    try {
+        if (req.user.role !== 'DRIVER') return res.status(403).json({ message: 'Only drivers can accept jobs' });
+
+        const { loadId } = req.params;
+        const load = await Load.findByPk(loadId);
+
+        if (!load) return res.status(404).json({ message: 'Load not found' });
+
+        // Verify Load is available for this driver's fleet
+        const driver = await User.findByPk(req.user.id);
+
+        if (load.assignedToFleetId !== driver.fleetId) {
+            return res.status(403).json({ message: 'This load does not belong to your fleet' });
+        }
+
+        if (load.assignedToDriverId) {
+            return res.status(400).json({ message: 'Load already assigned to a driver' });
+        }
+
+        await load.update({ assignedToDriverId: driver.id });
+        res.json({ message: 'Job accepted successfully', load });
 
     } catch (err) {
         res.status(500).json({ error: err.message });

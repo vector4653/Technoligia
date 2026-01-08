@@ -9,19 +9,27 @@ async function seed() {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash('1234', salt);
 
-        // 1. Create Users
+        // 1. Create Users with Wallet Balances
         const users = await User.bulkCreate([
-            { email: 'shipper@test.com', password: passwordHash, role: 'SHIPPER' },
-            { email: 'fleet@test.com', password: passwordHash, role: 'FLEET' },
-            { email: 'driver@test.com', password: passwordHash, role: 'DRIVER' },
+            { email: 'shipper@test.com', password: passwordHash, role: 'SHIPPER', wallet_balance: 50000.00 },
+            { email: 'fleet@test.com', password: passwordHash, role: 'FLEET', wallet_balance: 12500.00 },
         ]);
-        console.log('Users created');
 
         const shipper = users[0];
         const fleet = users[1];
 
-        // 2. Create Dummy Loads
+        // Create Driver associated with Fleet
+        const driver = await User.create({
+            email: 'driver@test.com',
+            password: passwordHash,
+            role: 'DRIVER',
+            wallet_balance: 50.00,
+            fleetId: fleet.id
+        });
+
+        // 2. Create Loads with Context
         const loads = await Load.bulkCreate([
+            // Shipper has 3 OPEN loads
             {
                 shipperId: shipper.id,
                 origin: 'New York, NY',
@@ -44,42 +52,31 @@ async function seed() {
                 destination: 'Seattle, WA',
                 cargoType: 'Machinery',
                 maxPrice: 4500,
-                status: 'BIDDING',
+                status: 'OPEN',
             },
+
+            // Driver has 1 active load
             {
                 shipperId: shipper.id,
                 origin: 'Denver, CO',
                 destination: 'Phoenix, AZ',
                 cargoType: 'Food',
                 maxPrice: 1200,
-                status: 'ASSIGNED',
+                status: 'IN_TRANSIT',
                 assignedToFleetId: fleet.id,
+                assignedToDriverId: driver.id,
                 winningBidAmount: 1100,
                 pickupOtp: '123456',
                 deliveryOtp: '654321',
-            },
-            {
-                shipperId: shipper.id,
-                origin: 'Boston, MA',
-                destination: 'Austin, TX',
-                cargoType: 'Chemicals',
-                maxPrice: 6000,
-                status: 'DELIVERED',
-                assignedToFleetId: fleet.id,
-                winningBidAmount: 5800,
-                pickupOtp: '111111',
-                deliveryOtp: '222222',
             },
         ]);
         console.log('Loads created');
 
         // 3. Create Dummy Bids
-        await Bid.bulkCreate([
-            { loadId: loads[2].id, fleetId: fleet.id, amount: 4400, status: 'PENDING' },
-            { loadId: loads[2].id, fleetId: fleet.id, amount: 4300, status: 'PENDING' },
-        ]);
-        console.log('Bids created');
+        // Bid on one of the open loads (e.g., the NY to LA one, loads[0])
+        await Bid.create({ loadId: loads[0].id, fleetId: fleet.id, amount: 4800, status: 'PENDING' });
 
+        console.log('Bids created');
         console.log('Seeding complete!');
         process.exit(0);
     } catch (err) {

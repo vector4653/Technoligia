@@ -12,5 +12,6 @@ router.get('/', loadController.getLoads);
 router.post('/:loadId/bids', bidController.placeBid);
 router.post('/accept-bid', loadController.acceptBid);
 router.post('/:loadId/verify-otp', loadController.verifyOtp);
+router.post('/:loadId/accept-job', loadController.acceptJob);
 
 module.exports = router;

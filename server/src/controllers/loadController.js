@@ -150,29 +150,46 @@ exports.verifyOtp = async (req, res) => {
 };
 
 exports.acceptJob = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
-        if (req.user.role !== 'DRIVER') return res.status(403).json({ message: 'Only drivers can accept jobs' });
+        if (req.user.role !== 'DRIVER') {
+            await t.rollback();
+            return res.status(403).json({ message: 'Only drivers can accept jobs' });
+        }
 
         const { loadId } = req.params;
-        const load = await Load.findByPk(loadId);
 
-        if (!load) return res.status(404).json({ message: 'Load not found' });
+        // Lock the row for update to prevent race conditions
+        const load = await Load.findByPk(loadId, {
+            lock: t.LOCK.UPDATE,
+            transaction: t
+        });
+
+        if (!load) {
+            await t.rollback();
+            return res.status(404).json({ message: 'Load not found' });
+        }
 
         // Verify Load is available for this driver's fleet
-        const driver = await User.findByPk(req.user.id);
+        const driver = await User.findByPk(req.user.id, { transaction: t });
 
         if (load.assignedToFleetId !== driver.fleetId) {
+            await t.rollback();
             return res.status(403).json({ message: 'This load does not belong to your fleet' });
         }
 
         if (load.assignedToDriverId) {
+            await t.rollback();
             return res.status(400).json({ message: 'Load already assigned to a driver' });
         }
 
-        await load.update({ assignedToDriverId: driver.id });
+        await load.update({ assignedToDriverId: driver.id }, { transaction: t });
+
+        await t.commit();
         res.json({ message: 'Job accepted successfully', load });
 
     } catch (err) {
+        await t.rollback();
         res.status(500).json({ error: err.message });
     }
 };

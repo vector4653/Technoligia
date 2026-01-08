@@ -60,6 +60,15 @@ const Login = () => {
                     <p>Fleet: fleet@test.com / 1234</p>
                     <p>Driver: driver@test.com / 1234</p>
                 </div>
+
+                <div className="mt-6 text-center border-t pt-4 border-gray-100 dark:border-slate-800">
+                    <p className="text-sm text-gray-600 dark:text-slate-400">
+                        Don't have an account?{' '}
+                        <a href="/register" onClick={(e) => { e.preventDefault(); navigate('/register'); }} className="text-blue-600 hover:underline font-medium cursor-pointer">
+                            Register here
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
     );

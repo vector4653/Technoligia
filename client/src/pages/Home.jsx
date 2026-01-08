@@ -40,7 +40,7 @@ const Home = () => {
                             </p>
                             <div className="flex justify-center gap-4">
                                 <button
-                                    onClick={() => navigate('/login')}
+                                    onClick={() => navigate('/register')}
                                     className="group bg-blue-600 text-white text-lg px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:bg-blue-700 hover:shadow-blue-200 hover:-translate-y-1 flex items-center gap-2"
                                 >
                                     Get Started

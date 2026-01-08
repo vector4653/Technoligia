@@ -8,12 +8,15 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 
+import Register from './pages/Register';
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           <Route element={<ProtectedRoute allowedRoles={['SHIPPER']} />}>
             <Route path="/shipper" element={<ShipperDashboard />} />

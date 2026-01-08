@@ -6,6 +6,9 @@ exports.placeBid = async (req, res) => {
 
         const { loadId } = req.params;
         const { amount } = req.body;
+        if (amount <= 0) {
+            return res.status(400).json({ message: 'Bid amount must be positive' });
+        }
 
         const load = await Load.findByPk(loadId);
         if (!load) return res.status(404).json({ message: 'Load not found' });

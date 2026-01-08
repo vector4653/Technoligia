@@ -5,9 +5,13 @@ exports.placeBid = async (req, res) => {
         if (req.user.role !== 'FLEET') return res.status(403).json({ message: 'Only Fleet Managers can bid' });
 
         const { loadId } = req.params;
-        const { amount } = req.body;
+        let { amount } = req.body;
 
-        if (amount <= 0) return res.status(400).json({ message: 'Bid amount must be a positive number' });
+        // FIX: Ensure amount is a valid number
+        amount = Number(amount);
+        if (isNaN(amount) || amount <= 0) {
+            return res.status(400).json({ message: 'Bid amount must be a positive number' });
+        }
 
         const load = await Load.findByPk(loadId);
         if (!load) return res.status(404).json({ message: 'Load not found' });

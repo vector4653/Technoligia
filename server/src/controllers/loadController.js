@@ -6,10 +6,19 @@ exports.createLoad = async (req, res) => {
         // Only Shippers can create loads
         if (req.user.role !== 'SHIPPER') return res.status(403).json({ message: 'Only shippers can post loads' });
 
+        // FIX: Destructure only the allowed fields to prevent Mass Assignment attacks
+        const { origin, destination, cargoType, weight, maxPrice, pickupDate, deliveryDate } = req.body;
+
         const load = await Load.create({
-            ...req.body,
+            origin,
+            destination,
+            cargoType,
+            weight,
+            maxPrice,
+            pickupDate,
+            deliveryDate,
             shipperId: req.user.id,
-            status: 'OPEN'
+            status: 'OPEN' // Force status to OPEN regardless of input
         });
         res.status(201).json(load);
     } catch (err) {
@@ -25,7 +34,6 @@ exports.getLoads = async (req, res) => {
         if (role === 'SHIPPER') {
             where = { shipperId: id };
         } else if (role === 'FLEET') {
-            // Fleet sees OPEN/BIDDING loads to bid on, OR loads assigned to them
             const { Op } = require('sequelize');
             where = {
                 [Op.or]: [
@@ -35,31 +43,43 @@ exports.getLoads = async (req, res) => {
             };
         } else if (role === 'DRIVER') {
             const { Op } = require('sequelize');
-            // My Active Tasks OR Available Jobs in my Fleet's Pool
-            // Assumption: user object in req has fleetId. (Need to ensure that in verifyToken or lookup here)
-            // But wait, req.user from JWT might not have fleetId if token is old.
-            // Let's fetch the user to be safe or rely on updated token.
-            // For now, let's look up the user's fleetId.
             const driver = await User.findByPk(id);
-
             where = {
                 [Op.or]: [
-                    { assignedToDriverId: id }, // Assigned to me
+                    { assignedToDriverId: id },
                     {
                         assignedToFleetId: driver.fleetId,
-                        assignedToDriverId: null, // Unassigned in my fleet
-                        status: 'ASSIGNED' // Ready for driver assignment
+                        assignedToDriverId: null,
+                        status: 'ASSIGNED'
                     }
                 ]
             };
         }
 
+        // FIX: Secure the include array to prevent leaking competitor emails
+        let includeOptions = [
+            { model: User, as: 'shipper', attributes: ['email'] }
+        ];
+
+        if (role === 'SHIPPER') {
+            // Shippers can see who is bidding
+            includeOptions.push({
+                model: Bid,
+                as: 'bids',
+                include: [{ model: User, as: 'bidder', attributes: ['email'] }]
+            });
+        } else if (role === 'FLEET') {
+            // Fleets see amounts to compete, but NOT who the bidder is (Blind Auction)
+            includeOptions.push({
+                model: Bid,
+                as: 'bids',
+                attributes: ['amount', 'createdAt'] // Excludes 'bidder' model entirely
+            });
+        }
+
         const loads = await Load.findAll({
             where,
-            include: [
-                { model: User, as: 'shipper', attributes: ['email'] },
-                { model: Bid, as: 'bids', include: [{ model: User, as: 'bidder', attributes: ['email'] }] }
-            ],
+            include: includeOptions,
             order: [['createdAt', 'DESC']]
         });
 
@@ -73,34 +93,39 @@ exports.acceptBid = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { loadId, bidId } = req.body;
-        const load = await Load.findByPk(loadId);
+
+        // FIX: Add Database Lock to prevent Race Conditions (Double Assignment)
+        const load = await Load.findByPk(loadId, {
+            lock: t.LOCK.UPDATE,
+            transaction: t
+        });
 
         if (!load) return res.status(404).json({ message: 'Load not found' });
         if (load.shipperId !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
-        if (load.status !== 'OPEN' && load.status !== 'BIDDING') return res.status(400).json({ message: 'Load not open for assignment' });
 
-        const bid = await Bid.findByPk(bidId);
-        if (!bid) return res.status(404).json({ message: 'Bid not found' });
+        // Strict check: Status MUST be OPEN or BIDDING. 
+        if (load.status !== 'OPEN' && load.status !== 'BIDDING') {
+            await t.rollback();
+            return res.status(400).json({ message: 'Load not open for assignment' });
+        }
 
-        // REMOVED: Auto-assign to the first available driver (Hackathon Shortcut)
-        // Now using Driver Job Pool
-        // const driver = await User.findOne({ where: { role: 'DRIVER' } });
+        const bid = await Bid.findByPk(bidId, { transaction: t });
+        if (!bid) {
+            await t.rollback();
+            return res.status(404).json({ message: 'Bid not found' });
+        }
 
-        // Update Load
         await load.update({
             status: 'ASSIGNED',
             assignedToFleetId: bid.fleetId,
-            assignedToFleetId: bid.fleetId,
-            assignedToDriverId: null, // Driver accepts it later
+            assignedToDriverId: null,
             winningBidAmount: bid.amount,
             pickupOtp: generateOTP(),
             deliveryOtp: generateOTP(),
         }, { transaction: t });
 
-        // Update Bids
         await bid.update({ status: 'ACCEPTED' }, { transaction: t });
 
-        // Reject other bids
         const { Op } = require('sequelize');
         await Bid.update({ status: 'REJECTED' }, {
             where: {
@@ -128,6 +153,11 @@ exports.verifyOtp = async (req, res) => {
 
         const load = await Load.findByPk(loadId);
         if (!load) return res.status(404).json({ message: 'Load not found' });
+
+        // FIX: Prevent other drivers from interfering with loads they don't own
+        if (load.assignedToDriverId !== req.user.id) {
+            return res.status(403).json({ message: 'You are not assigned to this load' });
+        }
 
         let nextStatus = '';
 

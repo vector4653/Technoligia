@@ -1,3 +1,6 @@
+const crypto = require('crypto');
+
 exports.generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    // Generates a cryptographically strong 6-digit number
+    return crypto.randomInt(100000, 1000000).toString();
 };

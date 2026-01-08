@@ -1,5 +1,6 @@
 services:
   server:
+    image: vectorxd/server:latest
     build:
       context: ../server
     ports:
@@ -14,9 +15,20 @@ services:
       # Add other environment variables here if needed
 
   client:
+    image: vectorxd/client:latest
     build:
       context: ../client
     ports:
       - "3000:80"
     depends_on:
       - server
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: http client:80
+    ports:
+      - "4040:4040"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    depends_on:
+      - client

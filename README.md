@@ -1,179 +1,94 @@
-# build2break
+# FreightSync
 
-## domain: Logi-Tech
+**FreightSync** is a secure, containerized freight marketplace application connecting shippers with fleet managers. It features load creation, bidding, and shipment tracking with OTP verification.
 
-## Problem statement and selected domain
+## 🚀 Quick Start (Docker)
 
-This repository implements a simple freight marketplace: a platform where shippers create loads and fleet manager/drivers place bids to carry freight. The domain is logistics/freight matching (loads, bids, fleets, drivers, shippers).
+The easiest way to run the project.
 
-Core problem: Provide a minimal full-stack reference that allows shippers to publish loads, fleets to bid, and drivers to view assigned loads with OTP-based pickup/delivery confirmation.
+### Prerequisites
+- Docker Desktop (Windows/Mac/Linux)
+- [Ngrok Authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) (Optional, for public access)
 
-## How to run the project
-
-This project can be run with Docker (recommended) or locally using VS Code + `git clone`.
-
-### Docker (recommended)
-
-- Requirements: Docker Desktop (Windows).
-- From the project root run:
+### 1. Run the Application
+All infrastructure configuration is in the `infra` directory.
 
 ```bash
-git clone <https://github.com/vector4653/Technoligia.git> build2break
-cd build2break
-# With Docker Compose v2 (recommended)
-docker compose up --build
-
-# Or, if using the older docker-compose CLI
+cd infra
 docker-compose up --build
 ```
+- **Local Access**: [http://localhost:3000](http://localhost:3000)
+- **API Health**: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
-- The `client` service maps port `3000` (frontend).
-- The `server` service maps port `5000` (backend API).
-- Open http://localhost:3000 to access the application.
-- To stop and remove containers:
+### 2. Run with Public Access (Ngrok)
+To expose your local environment to the internet (e.g., for demos):
 
-```bash
-docker compose down
+**PowerShell:**
+```powershell
+cd infra
+$env:NGROK_AUTHTOKEN="YOUR_AUTHTOKEN_HERE"; docker-compose up
 ```
 
-- Notes:
-	- The compose file mounts `./server/database.sqlite` so database state persists across restarts.
-	- Ensure Docker has access to the project folder on Windows.
-
-### VS Code + Git (local development)
-
-- Prerequisites: Node.js (>=16), npm, VS Code (optional but recommended).
-- Clone the repository and open it in VS Code:
-
-```bash
-git clone <https://github.com/vector4653/Technoligia.git> build2break
-cd build2break
+**CMD:**
+```cmd
+cd infra
+set NGROK_AUTHTOKEN=YOUR_AUTHTOKEN_HERE && docker-compose up
 ```
+- Access via the **Public URL** printed in the terminal (starts with `https://...ngrok-free.dev`).
 
-- Server (Express + SQLite):
+---
 
+## 🔒 Security Features
+
+- **Rate Limiting**:
+    - OTP Verification: Strict limit of **3 attempts per minute**.
+    - Load Creation: Limited to 5 requests per 15 minutes.
+- **DDoS Protection**:
+    - JSON payloads limited to **10kb**.
+- **Data Integrity**:
+    - Loads are strictly assigned to the authenticated Shipper (Spoofing prevention).
+    - Database errors are masked to prevent information leakage.
+- **Authentication**:
+    - JWT-based auth with a strong 256-bit secure secret.
+
+---
+
+## 🏗️ Architecture
+
+- **Frontend**: React + Vite (Port 80/3000)
+- **Backend**: Node.js + Express (Port 5000)
+- **Database**: SQLite (Persisted in `./server/database.sqlite`)
+- **Gateway**: Nginx (Reverse Proxy)
+- **Tunnel**: Ngrok (Public Access)
+
+### Directory Structure
+- `client/`: React Frontend code
+- `server/`: Express Backend code
+- `infra/`: Docker infrastructure (`docker-compose.yml`)
+
+## 🛠️ Local Development (No Docker)
+
+If you prefer running without Docker:
+
+**Server:**
 ```bash
 cd server
 npm install
-# Option A: run in production mode
-npm run start
-
-# Option B: run in development with auto-reload (requires nodemon)
 npm run dev
 ```
 
-- Client (React + Vite):
-
+**Client:**
 ```bash
 cd client
 npm install
 npm run dev
 ```
+*Note: Ensure `client/.env` or proxy config points to port 5000.*
 
-- Common endpoints:
-	- Health check: `GET /api/health` (e.g. http://localhost:3000/api/health)
-	- API roots: `/api/auth`, `/api/loads`
+## 🧪 Demo Credentials
 
-
-## System architecture overview
-
-- Frontend: React with Vite (located in `client/`) providing dashboard and auth UI. Served via Nginx in Docker.
-- Backend: Express.js server (located in `server/`) exposing REST APIs under `/api/*`.
-- Database: SQLite via Sequelize (file `server/database.sqlite` by default) for simplicity and portability.
-- Auth: JWT-based authentication (`process.env.JWT_SECRET` required).
-- Dev/Deployment: `docker-compose.yml` orchestrates `client` and `server` services.
-
-## Setup and testing instructions (details)
-
-1. Environment variables
-
-Create a `.env` file in `server/` with at least:
-
-```
-PORT=3000
-JWT_SECRET=your_long_random_secret
-NODE_ENV=development
-```
-
-2. Seed the database (optional, will DROP & recreate tables)
-
-```bash
-cd server
-node seed.js
-```
-
-3. Manual testing
-
-- Open the health route: `GET /api/health`.
-- Use Postman / curl to exercise auth (`/api/auth`) and load endpoints (`/api/loads`).
-
-4. Notes about running client + server concurrently
-
-- The server listens on `process.env.PORT` (default `5000` if not provided). In this repo Docker maps `3000`.
-- Vite dev server runs on `5173` by default; when running both locally open the client dev URL (usually http://localhost:5173) and ensure API calls point to the server port.
-
-## Assumptions and known limitations
-
-- Persistence: SQLite is used for ease of setup — not intended for scale or high-concurrency production use.
-- Security: HTTPS, rate limiting, secure cookie handling, and production-ready token rotation are not implemented here.
-- Secrets: `JWT_SECRET` must be provided via `.env` or container environment; do not commit secrets.
-- Seed script: `server/seed.js` uses `sequelize.sync({ force: true })` and will DROP tables — use only for development.
-- Docker setup: `docker-compose.yml` runs two services: `client` (Nginx serving React build) and `server` (Express API).
-
-## Useful commands summary
-
-```bash
-# Docker (root)
-docker compose up --build
-docker compose down
-
-# Local (server)
-cd server
-npm install
-npm run dev   # nodemon
-node seed.js  # optional: seed DB (drops tables)
-
-# Local (client)
-cd client
-npm install
-npm run dev   # vite dev server
-```
-
-## Project Summary
-
-**FrieghtSync** is a lightweight, containerized freight marketplace application. It connects shippers with fleet managers, enabling load creation, bidding, and shipment tracking with OTP verification. Built with React (Vite) for the frontend and Express.js (SQLite) for the backend, it serves as a full-stack reference implementation for logistics domain problems.
-
-## Architecture Diagram
-
-```mermaid
-graph LR
-    subgraph Browser ["User Browser"]
-        User(("User"))
-        SPA["React SPA"]
-    end
-
-    subgraph Docker ["Docker Host"]
-        direction TB
-        subgraph ClientService ["Client Service :3000"]
-            Nginx["Nginx Web Server"]
-        end
-        
-        subgraph ServerService ["Server Service :5000"]
-            Express["Express.js API"]
-        end
-        
-        Volume[("database.sqlite")]
-    end
-
-    User -->|Access http://localhost:3000| Nginx
-    Nginx -->|"Serves Static Assets"| SPA
-    SPA -->|"REST API Request"| Express
-    Express -->|"ORM / SQL"| Volume
-    
-    style User fill:#f9f,stroke:#333,stroke-width:2px
-    style SPA fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
-    style Nginx fill:#009639,stroke:#333,stroke-width:2px,color:#fff
-    style Express fill:#8cc84b,stroke:#333,stroke-width:2px,color:#fff
-    style Volume fill:#f29111,stroke:#333,stroke-width:2px,color:#fff
-```
-
+| Role | Email | Password |
+|------|-------|----------|
+| **Shipper** | `shipper@test.com` | `1234` |
+| **Fleet** | `fleet@test.com` | `1234` |
+| **Driver** | `driver@test.com` | `1234` |

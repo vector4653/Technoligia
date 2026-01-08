@@ -150,6 +150,11 @@ const Register = () => {
                             Login here
                         </Link>
                     </p>
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800">
+                        <Link to="/" className="text-gray-500 hover:text-gray-700 dark:text-slate-500 dark:hover:text-slate-300 text-sm font-medium transition-colors">
+                            ← Back to Home
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

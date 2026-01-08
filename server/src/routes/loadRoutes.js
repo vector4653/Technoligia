@@ -14,6 +14,15 @@ const createLoadLimiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
+// Strict Rate Limiter for OTP Verification: 3 attempts per minute
+const otpLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 3,
+    message: { message: "Too many OTP attempts, please try again after 1 minute" },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 router.use(verifyToken); // Protect all load routes
 
 // Apply rate limiter specifically to the creation endpoint
@@ -22,7 +31,7 @@ router.get('/', loadController.getLoads);
 
 router.post('/:loadId/bids', bidController.placeBid);
 router.post('/accept-bid', loadController.acceptBid);
-router.post('/:loadId/verify-otp', loadController.verifyOtp);
+router.post('/:loadId/verify-otp', otpLimiter, loadController.verifyOtp);
 router.post('/:loadId/accept-job', loadController.acceptJob);
 
 module.exports = router;

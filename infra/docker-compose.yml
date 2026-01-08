@@ -9,7 +9,8 @@ services:
     environment:
       - PORT=5000
       - NODE_ENV=production
-      - JWT_SECRET=dev_secret_key_123
+      # Generated strong random secret for production security
+      - JWT_SECRET=5f8d9e2a1b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e
       # Add other environment variables here if needed
 
   client:

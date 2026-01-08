@@ -33,7 +33,8 @@ app.use('/api/', apiLimiter);
 // Strict Rate Limiting for Auth routes
 app.use('/api/auth', authLimiter);
 
-app.use(express.json());
+// Limit payload size to 10kb to prevent DDoS via large JSON bodies
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser()); // Added cookieParser middleware
 
 // Serves static files from public directory

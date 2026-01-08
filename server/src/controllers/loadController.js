@@ -6,7 +6,8 @@ exports.createLoad = async (req, res) => {
         // Only Shippers can create loads
         if (req.user.role !== 'SHIPPER') return res.status(403).json({ message: 'Only shippers can post loads' });
 
-        // FIX: Destructure only the allowed fields to prevent Mass Assignment attacks
+        // FIX: Destructure only the allowed fields.
+        // Explicitly excluding `shipperId` to ensure it comes from `req.user.id`
         const { origin, destination, cargoType, weight, maxPrice, pickupDate, deliveryDate } = req.body;
 
         // Validation: Check if shipper has enough funds
@@ -28,7 +29,8 @@ exports.createLoad = async (req, res) => {
         });
         res.status(201).json(load);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        console.error("Load Create Error:", err);
+        res.status(500).json({ message: 'Server error occurred' });
     }
 };
 
@@ -91,7 +93,8 @@ exports.getLoads = async (req, res) => {
 
         res.json(loads);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Get Loads Error:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -146,7 +149,8 @@ exports.acceptBid = async (req, res) => {
 
     } catch (err) {
         await t.rollback();
-        res.status(500).json({ error: err.message });
+        console.error("Accept Bid Error:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -231,7 +235,8 @@ exports.verifyOtp = async (req, res) => {
 
     } catch (err) {
         if (t && !t.finished) await t.rollback(); // Check if transaction is still active
-        res.status(500).json({ error: err.message });
+        console.error("Verify OTP Error:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -276,6 +281,7 @@ exports.acceptJob = async (req, res) => {
 
     } catch (err) {
         await t.rollback();
-        res.status(500).json({ error: err.message });
+        console.error("Accept Job Error:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 };

@@ -43,6 +43,7 @@ exports.placeBid = async (req, res) => {
 
         res.status(201).json(bid);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Place Bid Error:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 };

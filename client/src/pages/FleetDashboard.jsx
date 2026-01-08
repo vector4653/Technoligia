@@ -3,7 +3,10 @@ import Sidebar from '../components/Sidebar';
 import MobileNav from '../components/MobileNav';
 import axios from 'axios';
 
+import { useAuth } from '../context/AuthContext';
+
 const FleetDashboard = () => {
+    const { user } = useAuth();
     const [loads, setLoads] = useState([]);
     const [bidAmounts, setBidAmounts] = useState({});
 
@@ -40,7 +43,14 @@ const FleetDashboard = () => {
             <Sidebar role="FLEET" />
             <MobileNav />
             <div className="flex-1 md:ml-64 p-4 md:p-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-6">Load Marketplace</h1>
+                <div className="flex justify-between items-end mb-6">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Load Marketplace</h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">
+                            Wallet: <span className="font-bold text-green-600 dark:text-green-400">${Number(user?.wallet_balance || 0).toFixed(2)}</span>
+                        </p>
+                    </div>
+                </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {loads.map(load => (

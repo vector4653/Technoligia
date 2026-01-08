@@ -28,7 +28,8 @@ exports.login = async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                wallet_balance: user.wallet_balance
             }
         });
 
@@ -79,7 +80,8 @@ exports.register = async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                wallet_balance: user.wallet_balance
             }
         });
 

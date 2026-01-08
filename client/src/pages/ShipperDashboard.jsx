@@ -52,7 +52,12 @@ const ShipperDashboard = () => {
             <MobileNav />
             <div className="flex-1 md:ml-64 p-8">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Shipments</h1>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Shipments</h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">
+                            Wallet: <span className="font-bold text-green-600 dark:text-green-400">${Number(user?.wallet_balance || 0).toFixed(2)}</span>
+                        </p>
+                    </div>
                     <button
                         onClick={() => setShowForm(!showForm)}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg"

@@ -137,3 +137,43 @@ node seed.js  # optional: seed DB (drops tables)
 cd client
 npm install
 npm run dev   # vite dev server
+```
+
+## Project Summary
+
+**FrieghtSync** is a lightweight, containerized freight marketplace application. It connects shippers with fleet managers, enabling load creation, bidding, and shipment tracking with OTP verification. Built with React (Vite) for the frontend and Express.js (SQLite) for the backend, it serves as a full-stack reference implementation for logistics domain problems.
+
+## Architecture Diagram
+
+```mermaid
+graph LR
+    subgraph Browser ["User Browser"]
+        User(("User"))
+        SPA["React SPA"]
+    end
+
+    subgraph Docker ["Docker Host"]
+        direction TB
+        subgraph ClientService ["Client Service :3000"]
+            Nginx["Nginx Web Server"]
+        end
+        
+        subgraph ServerService ["Server Service :5000"]
+            Express["Express.js API"]
+        end
+        
+        Volume[("database.sqlite")]
+    end
+
+    User -->|Access http://localhost:3000| Nginx
+    Nginx -->|"Serves Static Assets"| SPA
+    SPA -->|"REST API Request"| Express
+    Express -->|"ORM / SQL"| Volume
+    
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style SPA fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
+    style Nginx fill:#009639,stroke:#333,stroke-width:2px,color:#fff
+    style Express fill:#8cc84b,stroke:#333,stroke-width:2px,color:#fff
+    style Volume fill:#f29111,stroke:#333,stroke-width:2px,color:#fff
+```
+

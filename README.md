@@ -59,15 +59,19 @@ The architecture follows industry best practices for modern web applications:
 
 ```mermaid
 graph LR
-    subgraph Browser ["User Browser"]
+    subgraph Internet
         User(("User"))
-        SPA["React SPA"]
+    end
+
+    subgraph Tunnel ["Public Tunnel"]
+        Ngrok["Ngrok Service"]
     end
 
     subgraph Docker ["Docker Host"]
         direction TB
         subgraph ClientService ["Client Service :3000"]
-            Nginx["Nginx Web Server"]
+            Nginx["Nginx Reverse Proxy"]
+            SPA["React SPA"]
         end
         
         subgraph ServerService ["Server Service :5000"]
@@ -77,12 +81,15 @@ graph LR
         Volume[("database.sqlite")]
     end
 
-    User -->|Access http://localhost:3000| Nginx
-    Nginx -->|"Serves Static Assets"| SPA
-    SPA -->|"REST API Request"| Express
+    User -->|HTTPS| Ngrok
+    Ngrok -->|Tunnel| Nginx
+    Nginx -->|"1. Serves Static"| SPA
+    SPA -->|"2. /api calls"| Nginx
+    Nginx -->|"3. Proxies /api"| Express
     Express -->|"ORM / SQL"| Volume
     
     style User fill:#f9f,stroke:#333,stroke-width:2px
+    style Ngrok fill:#1F1E24,stroke:#fff,stroke-width:2px,color:#fff
     style SPA fill:#61dafb,stroke:#333,stroke-width:2px,color:#000
     style Nginx fill:#009639,stroke:#333,stroke-width:2px,color:#fff
     style Express fill:#8cc84b,stroke:#333,stroke-width:2px,color:#fff

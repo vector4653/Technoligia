@@ -77,11 +77,13 @@ exports.getLoads = async (req, res) => {
                 include: [{ model: User, as: 'bidder', attributes: ['email'] }]
             });
         } else if (role === 'FLEET') {
-            // Fleets see amounts to compete, but NOT who the bidder is (Blind Auction)
+            // Fleets see ONLY their own bids (Blind Auction)
             includeOptions.push({
                 model: Bid,
                 as: 'bids',
-                attributes: ['amount', 'createdAt'] // Excludes 'bidder' model entirely
+                where: { fleetId: id },
+                required: false, // Ensure we get loads even if we haven't bid
+                attributes: ['amount', 'createdAt', 'status']
             });
         }
 

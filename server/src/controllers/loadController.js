@@ -1,5 +1,23 @@
 const { Load, Bid, User, sequelize } = require('../models');
 const { generateOTP } = require('../utils/otpGenerator');
+const crypto = require('crypto');
+
+// Helper for constant-time comparison to prevent timing attacks
+const secureCompare = (savedOtp, inputOtp) => {
+    if (!savedOtp || !inputOtp) return false;
+    
+    // Convert to Strings first to safely handle numbers/nulls
+    const strSaved = String(savedOtp).trim();
+    const strInput = String(inputOtp).trim();
+
+    const bufferA = Buffer.from(strSaved);
+    const bufferB = Buffer.from(strInput);
+
+    // timingSafeEqual throws if lengths differ, so check length first
+    if (bufferA.length !== bufferB.length) return false;
+
+    return crypto.timingSafeEqual(bufferA, bufferB);
+};
 
 exports.createLoad = async (req, res) => {
     try {
@@ -187,7 +205,8 @@ exports.verifyOtp = async (req, res) => {
         let nextStatus = '';
 
         if (load.status === 'ASSIGNED') {
-            if (String(load.pickupOtp).trim() !== String(otp).trim()) {
+            // FIX: Use secure constant-time comparison
+            if (!secureCompare(load.pickupOtp, otp)) {
                 await t.rollback();
                 return res.status(400).json({ message: 'Invalid Pickup OTP' });
             }
@@ -196,7 +215,8 @@ exports.verifyOtp = async (req, res) => {
             await load.update({ status: nextStatus, pickupOtp: null }, { transaction: t });
 
         } else if (load.status === 'IN_TRANSIT') {
-            if (String(load.deliveryOtp).trim() !== String(otp).trim()) {
+            // FIX: Use secure constant-time comparison
+            if (!secureCompare(load.deliveryOtp, otp)) {
                 await t.rollback();
                 return res.status(400).json({ message: 'Invalid Delivery OTP' });
             }
@@ -214,16 +234,11 @@ exports.verifyOtp = async (req, res) => {
 
             if (Number(shipper.wallet_balance) < amount) {
                 // In a real app we might handle debt, here we just allow it to go negative or fail.
-                // For simplified flow, we allow it.
             }
 
             // Update balances
             await shipper.decrement('wallet_balance', { by: amount, transaction: t });
             await fleet.increment('wallet_balance', { by: amount, transaction: t });
-
-            // Mark as Paid immediately for simplicity or keep as DELIVERED? 
-            // The prompt says "wallet money should decrease when the delivery has been done".
-            // So we'll do the transfer now.
 
             // FIX: Clear OTP so it can't be reused
             await load.update({ status: 'DELIVERED', deliveryOtp: null }, { transaction: t });

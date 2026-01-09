@@ -10,6 +10,11 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        if (!process.env.JWT_SECRET) {
+            console.error('FATAL: JWT_SECRET is not defined.');
+            return res.status(500).json({ message: 'Internal Server Error' });
+        }
+
         // Server-side validation
         if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
 
@@ -22,7 +27,6 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, comparePassword);
 
         // If user doesn't exist OR password doesn't match, return error
-        // This keeps the timing roughly consistent (~same bcrypt cost) 
         if (!user || !isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -54,6 +58,11 @@ exports.login = async (req, res) => {
 exports.register = async (req, res) => {
     try {
         const { email, password, role, fleetId } = req.body;
+
+        if (!process.env.JWT_SECRET) {
+            console.error('FATAL: JWT_SECRET is not defined.');
+            return res.status(500).json({ message: 'Internal Server Error' });
+        }
 
         // Validation
         if (!email || !password || !role) {
